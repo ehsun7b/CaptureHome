@@ -1,11 +1,15 @@
 package com.ehsunbehravesh.capturehome;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Level;
@@ -52,8 +56,9 @@ public class CaptureUploader implements Observer {
 
         if (img != null) {
             try {
-                File imageFile = writeImage(img);
-                uploadImage(img);
+                String timestamp = System.currentTimeMillis() + "";
+                File imageFile = writeImage(img, timestamp);
+                uploadImage(imageToBase64(img), timestamp);
             } catch (IOException ex) {
                 Logger.getLogger(CaptureUploader.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -76,8 +81,8 @@ public class CaptureUploader implements Observer {
         this.interval = interval;
     }
 
-    private File writeImage(BufferedImage img) throws IOException {
-        File file = new File(uploadDirectory, System.currentTimeMillis() + ".png");
+    private File writeImage(BufferedImage img, String name) throws IOException {
+        File file = new File(uploadDirectory, name + ".png");
         ImageIO.write(img, "PNG", file);
         return file;
     }
@@ -90,8 +95,36 @@ public class CaptureUploader implements Observer {
         return result;
     }
 
-    private void uploadImage(BufferedImage img) throws IOException {
-        System.out.println(imageToBase64(img));
+    private void uploadImage(String content, String timestamp) throws IOException {
+        System.out.println("uploading ... " + timestamp);
+        //System.out.println(content);
+        
+        content = URLEncoder.encode(content, "UTF-8");
+        String postData = "content=" + content + "&timestamp=" + timestamp;
+
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setDoOutput(true);
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        connection.setRequestProperty("Content-Length", String.valueOf(postData.length()));
+
+        // Write data
+        OutputStream os = connection.getOutputStream();
+        os.write(postData.getBytes());
+
+        // Read response
+        StringBuilder responseSB = new StringBuilder();
+        BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+
+        String line;
+        while ((line = br.readLine()) != null) {
+            responseSB.append(line);
+        }
+
+        //Close streams
+        br.close();
+        os.close();
+        //System.out.println(responseSB.toString());
     }
 
 }
