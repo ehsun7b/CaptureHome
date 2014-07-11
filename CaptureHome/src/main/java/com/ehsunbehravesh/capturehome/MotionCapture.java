@@ -7,9 +7,9 @@ package com.ehsunbehravesh.capturehome;
 
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamMotionDetector;
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.util.Observable;
-import java.util.Observer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,22 +27,45 @@ public class MotionCapture extends Observable implements Runnable {
 
     @Override
     public void run() {
-        setChanged();
-        notifyObservers(capture());
+        /*
+        Dimension[] nonStandardResolutions = new Dimension[]{
+            WebcamResolution.PAL.getSize(),
+            WebcamResolution.HD720.getSize(),
+            new Dimension(2000, 1000),
+            new Dimension(1000, 500)
+        };*/
 
-        WebcamMotionDetector detector = new WebcamMotionDetector(Webcam.getDefault());
+        Webcam webcam = Webcam.getDefault();
+
+        //webcam.setCustomViewSizes(nonStandardResolutions);
+        //webcam.setViewSize(WebcamResolution.HD720.getSize());
+        webcam.setViewSize(new Dimension(640, 480));
+
+        setChanged();
+        notifyObservers(capture(webcam));
+
+        WebcamMotionDetector detector = new WebcamMotionDetector(webcam);
         detector.setInterval(100);
         detector.start();
 
+        long lastCapture = System.currentTimeMillis();
+
         while (capture) {
+
             if (detector.isMotion()) {
                 System.out.println("Motion detected.");
                 setChanged();
-                notifyObservers(capture());
+                notifyObservers(capture(webcam));
+                lastCapture = System.currentTimeMillis();
+            } else if (System.currentTimeMillis() - lastCapture > 1000 * 60 * 30) { // 30 min
+                System.out.println("Periodical capture.");
+                setChanged();
+                notifyObservers(capture(webcam));
+                lastCapture = System.currentTimeMillis();
             }
 
             try {
-                Thread.sleep(500);
+                Thread.sleep(100);
             } catch (InterruptedException ex) {
                 Logger.getLogger(MotionCapture.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -56,9 +79,7 @@ public class MotionCapture extends Observable implements Runnable {
         capture = false;
     }
 
-    private BufferedImage capture() {
-        Webcam webcam = Webcam.getDefault();
-        webcam.open();
+    private BufferedImage capture(Webcam webcam) {
         BufferedImage image = webcam.getImage();
         return image;
     }
