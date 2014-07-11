@@ -15,21 +15,25 @@
         <script>
             $(function() {
                 console.log("dome ready");
-                setInterval(function() {                    
-                    $.ajax({
-                        url: "/last?ts=" + new Date().getTime()
-                    }).done(function(data) {
-                        //console.log(data);
-                        $("#img").attr({"src": "data:image/png;base64," + data});
-                    });
-                    
-                }, 1000);
+                $("#img").load(function() {
+                    console.log("image loaded");
+                    setTimeout(refreshFrame, 1000);
+                }); 
+                
+                $("#img").error(function() {
+                    console.log("image failed");
+                    setTimeout(refreshFrame, 1000);
+                }); 
             });
+
+            function refreshFrame() {                
+                $("#img").attr({"src": "/last?ts=" + new Date().getTime()});                
+            }
 
         </script>
     </head>
     <body>
         <h1 id="timestamp"></h1>
-        <img id="img" src="" width="600"/>
+        <img id="img" src="/last" width="600"/>
     </body>
 </html>

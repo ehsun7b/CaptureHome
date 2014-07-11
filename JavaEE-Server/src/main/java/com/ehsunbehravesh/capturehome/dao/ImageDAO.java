@@ -2,7 +2,7 @@ package com.ehsunbehravesh.capturehome.dao;
 
 import com.ehsunbehravesh.capturehome.entity.Image;
 import com.ehsunbehravesh.capturehome.servlets.MemoryDatabase;
-import java.util.List;
+import java.awt.image.BufferedImage;
 
 /**
  *
@@ -14,7 +14,7 @@ public class ImageDAO {
         
     }
 
-    public void insert(final Image image) {
+    public void insert(final BufferedImage image) {
         /*
         Entity result = new Entity(Image.KIND);
 
@@ -28,7 +28,7 @@ public class ImageDAO {
         MemoryDatabase.insert(image);        
     }
 
-    public Image last() {
+    public BufferedImage last() {
         /*
         Query q = new Query(Image.KIND);
         q.addSort("timestamp", Query.SortDirection.DESCENDING);

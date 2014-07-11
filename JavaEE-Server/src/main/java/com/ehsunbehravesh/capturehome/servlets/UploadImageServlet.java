@@ -30,7 +30,7 @@ public class UploadImageServlet extends HttpServlet {
             Image image = new Image(timestamp, content);
                         
             ImageDAO dao = new ImageDAO();
-            dao.insert(image);
+            //dao.insert(image);
         }
         
         resp.getWriter().write("success");
