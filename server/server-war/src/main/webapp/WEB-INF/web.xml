@@ -9,4 +9,23 @@
         <servlet-name>UploadImageServlet</servlet-name>
         <url-pattern>/upload</url-pattern>
     </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>LastImageServlet</servlet-name>
+        <servlet-class>com.ehsunbehravesh.capturehome.servlets.LastImageServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LastImageServlet</servlet-name>
+        <url-pattern>/last</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>DisplayServlet</servlet-name>
+        <servlet-class>com.ehsunbehravesh.capturehome.servlets.DisplayServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DisplayServlet</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+
 </web-app>

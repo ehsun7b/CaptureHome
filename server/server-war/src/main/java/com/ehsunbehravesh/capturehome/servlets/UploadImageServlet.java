@@ -19,9 +19,14 @@ public class UploadImageServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String content = req.getParameter("content");
-        String timestamp = req.getParameter("timestamp");
+        String strTimestamp = req.getParameter("timestamp");
+        long timestamp = 0;
         
-        if (content != null && timestamp != null) {
+        try {
+            timestamp = Long.parseLong(strTimestamp);
+        } catch (Exception e) {}
+        
+        if (content != null && timestamp > 0) {
             Image image = new Image(timestamp, content);
             
             DatastoreService ds = DatastoreServiceFactory.getDatastoreService();

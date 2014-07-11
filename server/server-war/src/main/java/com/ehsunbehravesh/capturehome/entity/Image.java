@@ -6,10 +6,10 @@ package com.ehsunbehravesh.capturehome.entity;
  */
 public class Image {
     public static final String KIND = "Image";
-    private String timestamp;
+    private long timestamp;
     private String Content;
 
-    public Image(String timestamp, String Content) {
+    public Image(long timestamp, String Content) {
         this.timestamp = timestamp;
         this.Content = Content;
     }
@@ -17,13 +17,14 @@ public class Image {
     public Image() {
     }
 
-    public String getTimestamp() {
+    public long getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(String timestamp) {
+    public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
+
 
     public String getContent() {
         return Content;
