@@ -20,31 +20,35 @@ import java.util.logging.Logger;
 public class MotionCapture extends Observable implements Runnable {
 
     private boolean capture;
+    private final Webcam webcam;
+    private final Dimension size;
+    private WebcamMotionDetector detector;
 
-    public MotionCapture() {
+    public MotionCapture(Webcam webcam, Dimension size) {
+        this.webcam = webcam;
+        this.size = size;
         capture = true;
     }
 
     @Override
     public void run() {
         /*
-        Dimension[] nonStandardResolutions = new Dimension[]{
-            WebcamResolution.PAL.getSize(),
-            WebcamResolution.HD720.getSize(),
-            new Dimension(2000, 1000),
-            new Dimension(1000, 500)
-        };*/
-
-        Webcam webcam = Webcam.getDefault();
+         Dimension[] nonStandardResolutions = new Dimension[]{
+         WebcamResolution.PAL.getSize(),
+         WebcamResolution.HD720.getSize(),
+         new Dimension(2000, 1000),
+         new Dimension(1000, 500)
+         };*/
+        //Webcam webcam = Webcam.getDefault();
 
         //webcam.setCustomViewSizes(nonStandardResolutions);
         //webcam.setViewSize(WebcamResolution.HD720.getSize());
-        webcam.setViewSize(new Dimension(640, 480));
+        webcam.setViewSize(size);
 
         setChanged();
         notifyObservers(capture(webcam));
 
-        WebcamMotionDetector detector = new WebcamMotionDetector(webcam);
+        detector = new WebcamMotionDetector(webcam);
         detector.setInterval(100);
         detector.start();
 
@@ -83,5 +87,4 @@ public class MotionCapture extends Observable implements Runnable {
         BufferedImage image = webcam.getImage();
         return image;
     }
-
 }

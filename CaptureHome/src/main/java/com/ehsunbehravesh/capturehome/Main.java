@@ -1,5 +1,6 @@
 package com.ehsunbehravesh.capturehome;
 
+import java.awt.Dimension;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -29,7 +30,8 @@ public class Main {
             //CaptureUploader cu = new CaptureUploader(new URL("http://localhost:8080/upload"), new File("."), 2000);
             cu.start();
         } else {
-            MotionCaptureUploader cu = new MotionCaptureUploader(new URL(uploadUrl), new File("."));
+            Dimension size = new Dimension(640, 480);
+            MotionCaptureUploader cu = new MotionCaptureUploader(new URL(uploadUrl), new File("."), size, size, 200, 10);
             cu.start();
         }
     }

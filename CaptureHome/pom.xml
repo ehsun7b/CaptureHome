@@ -21,6 +21,12 @@
             <artifactId>commons-codec</artifactId>
             <version>1.9</version>
         </dependency>
+        <dependency>
+            <groupId>org.boofcv</groupId>
+            <artifactId>xuggler</artifactId>
+            <version>0.16</version>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>

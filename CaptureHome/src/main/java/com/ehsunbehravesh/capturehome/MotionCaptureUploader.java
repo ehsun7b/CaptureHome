@@ -1,6 +1,7 @@
 package com.ehsunbehravesh.capturehome;
 
-import static com.ehsunbehravesh.capturehome.CaptureUploader.imageToBase64;
+import com.github.sarxos.webcam.Webcam;
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,7 +10,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Level;
@@ -24,41 +24,67 @@ public class MotionCaptureUploader implements Observer {
 
     private final URL url;
     private final File uploadDirectory;
-    private MotionCapture capture;
+    private MotionCapture motionCapture;
+    private VideoCapture videoCapture;
+    private final Webcam webcam;
+    private final Dimension photoSize, videoSize;
+    private final long videoFrames;
+    private final int videoFPS;
+    private boolean recordingVideo;
 
-    public MotionCaptureUploader(URL url, File uploadDirectory) {
+    public MotionCaptureUploader(URL url, File uploadDirectory,
+            Dimension photoSize, Dimension videoSize, long videoFrames, int videoFPS) {
         this.url = url;
         this.uploadDirectory = uploadDirectory;
+        this.photoSize = photoSize;
+        this.videoSize = videoSize;
+        this.videoFrames = videoFrames;
+        this.videoFPS = videoFPS;
+        webcam = Webcam.getDefault();
+        recordingVideo = false;
     }
 
     public void start() {
-        capture = new MotionCapture();
-        capture.addObserver(this);
-        Thread thread = new Thread(capture);
+        motionCapture = new MotionCapture(webcam, photoSize);
+        motionCapture.addObserver(this);
+        Thread thread = new Thread(motionCapture);
         thread.start();
     }
 
     public void stop() {
-        if (capture != null) {
-            capture.stop();
+        if (motionCapture != null) {
+            motionCapture.stop();
         }
 
-        capture = null;
+        motionCapture = null;
     }
 
     @Override
     public void update(Observable o, Object arg) {
-        BufferedImage img = (BufferedImage) arg;
+        if (o instanceof MotionCapture) {
 
-        if (img != null) {
-            try {
-                String timestamp = System.currentTimeMillis() + "";
-                File imageFile = writeImage(img, timestamp);
-                //uploadImage(imageToBase64(img), timestamp);
-                uploadBinary(img, timestamp);
-            } catch (IOException ex) {
-                Logger.getLogger(CaptureUploader.class.getName()).log(Level.SEVERE, null, ex);
+            if (!recordingVideo) {
+                recordingVideo = true;
+                videoCapture = new VideoCapture(webcam, new File(uploadDirectory, System.currentTimeMillis() + ".ts"), videoFrames, videoSize, videoFPS);
+                videoCapture.addObserver(this);
+                new Thread(videoCapture).start();                
             }
+
+            BufferedImage img = (BufferedImage) arg;
+
+            if (img != null) {
+                try {
+                    String timestamp = System.currentTimeMillis() + "";
+                    File imageFile = writeImage(img, timestamp);
+                    //uploadImage(imageToBase64(img), timestamp);
+                    uploadBinary(img, timestamp);
+                } catch (IOException ex) {
+                    Logger.getLogger(CaptureUploader.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        } else if (o instanceof VideoCapture) {
+            videoCapture = null;
+            recordingVideo = false;
         }
     }
 
@@ -68,42 +94,10 @@ public class MotionCaptureUploader implements Observer {
         return file;
     }
 
-    private void uploadImage(String content, String timestamp) throws IOException {
-        System.out.println("uploading ... " + timestamp);
-        //System.out.println(content);
-
-        content = URLEncoder.encode(content, "UTF-8");
-        String postData = "content=" + content + "&timestamp=" + timestamp;
-
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setDoOutput(true);
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        connection.setRequestProperty("Content-Length", String.valueOf(postData.length()));
-
-        // Write data
-        OutputStream os = connection.getOutputStream();
-        os.write(postData.getBytes());
-
-        // Read response
-        StringBuilder responseSB = new StringBuilder();
-        BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-
-        String line;
-        while ((line = br.readLine()) != null) {
-            responseSB.append(line);
-        }
-
-        //Close streams
-        br.close();
-        os.close();
-        //System.out.println(responseSB.toString());
-    }
-
     private void uploadBinary(BufferedImage img, String timestamp) throws IOException {
         System.out.println("uploading ... " + timestamp);
         //System.out.println(content);
-        
+
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
