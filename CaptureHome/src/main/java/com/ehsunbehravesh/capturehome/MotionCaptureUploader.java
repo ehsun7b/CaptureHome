@@ -32,7 +32,7 @@ public class MotionCaptureUploader implements Observer {
     private final int videoFPS;
     private boolean recordingVideo;
 
-    public MotionCaptureUploader(URL url, File uploadDirectory,
+    public MotionCaptureUploader(Webcam webcam, URL url, File uploadDirectory,
             Dimension photoSize, Dimension videoSize, long videoFrames, int videoFPS) {
         this.url = url;
         this.uploadDirectory = uploadDirectory;
@@ -40,7 +40,7 @@ public class MotionCaptureUploader implements Observer {
         this.videoSize = videoSize;
         this.videoFrames = videoFrames;
         this.videoFPS = videoFPS;
-        webcam = Webcam.getDefault();
+        this.webcam = webcam;
         recordingVideo = false;
     }
 
